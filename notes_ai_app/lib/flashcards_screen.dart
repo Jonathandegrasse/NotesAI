@@ -15,7 +15,7 @@ class FlashcardsScreen extends StatefulWidget {
 
 class _FlashcardsScreenState extends State<FlashcardsScreen> {
   List<Flashcard> flashcards = [];
-
+  int currentIndex = 0;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
