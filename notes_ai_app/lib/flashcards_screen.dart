@@ -14,40 +14,64 @@ class FlashcardsScreen extends StatefulWidget {
 }
 
 class _FlashcardsScreenState extends State<FlashcardsScreen> {
-  List<Flashcard> flashcards = [
-    Flashcard(term: "Example Term 1", definition: "Example Definition 1"),
-    // Add more flashcards here
-  ];
-
-  int currentIndex = 0;
+  List<Flashcard> flashcards = [];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text('Flashcards')),
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            FlipFlashcard(flashcard: flashcards[currentIndex]),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                ElevatedButton(
-                  onPressed: () => setState(() {
-                    currentIndex = currentIndex > 0 ? currentIndex - 1 : flashcards.length - 1;
-                  }),
-                  child: Text('Previous'),
-                ),
-                ElevatedButton(
-                  onPressed: () => setState(() {
-                    currentIndex = currentIndex < flashcards.length - 1 ? currentIndex + 1 : 0;
-                  }),
-                  child: Text('Next'),
-                ),
-              ],
-            ),
-          ],
+        child: flashcards.isEmpty
+            ? AddFlashcardBox(onAddFlashcard: _addFlashcard)
+            : Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  FlipFlashcard(flashcard: flashcards[currentIndex]),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceAround,
+                    children: [
+                      ElevatedButton(
+                        onPressed: () => setState(() {
+                          currentIndex = currentIndex > 0 ? currentIndex - 1 : flashcards.length - 1;
+                        }),
+                        child: Text('Previous'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () => setState(() {
+                          currentIndex = currentIndex < flashcards.length - 1 ? currentIndex + 1 : 0;
+                        }),
+                        child: Text('Next'),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+      ),
+    );
+  }
+
+  void _addFlashcard() {
+    setState(() {
+      flashcards.add(Flashcard(term: "", definition: ""));
+    });
+  }
+}
+
+class AddFlashcardBox extends StatelessWidget {
+  final VoidCallback onAddFlashcard;
+
+  AddFlashcardBox({required this.onAddFlashcard});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onAddFlashcard,
+      child: Container(
+        width: 250,
+        height: 150,
+        color: Colors.black,
+        child: Center(
+          child: Icon(Icons.add, color: Colors.white, size: 40),
         ),
       ),
     );

@@ -4,11 +4,11 @@ import 'flashcards_screen.dart'; // Import the Flashcards screen
 import 'camera_widget.dart'; // Import the Camera widget
 import 'package:camera/camera.dart'; // Import camera package
 import 'package:flutter_config/flutter_config.dart';
+import 'my_app.dart'; // Import your app's main widget
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await FlutterConfig.loadEnvVariables();
-
   runApp(MyApp());
 }
 

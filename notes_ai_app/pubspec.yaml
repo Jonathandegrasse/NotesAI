@@ -47,7 +47,7 @@ dev_dependencies:
   image_picker: ^1.0.7
   http: ^0.13.3
   dotenv: ^2.0.0
-  flutter_config: any
+  flutter_config: ^3.3.1
   flutter_dotenv: ^5.0.3
 
   # The "flutter_lints" package below contains a set of recommended lints to
