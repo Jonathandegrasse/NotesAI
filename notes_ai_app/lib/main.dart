@@ -3,8 +3,12 @@ import 'settings_screen.dart'; // Import the Settings screen
 import 'flashcards_screen.dart'; // Import the Flashcards screen
 import 'camera_widget.dart'; // Import the Camera widget
 import 'package:camera/camera.dart'; // Import camera package
+import 'package:flutter_config/flutter_config.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await FlutterConfig.loadEnvVariables();
+
   runApp(MyApp());
 }
 
@@ -12,6 +16,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      title: 'My App',
       home: HomeScreen(),
     );
   }

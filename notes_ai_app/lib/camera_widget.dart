@@ -1,7 +1,20 @@
+import 'dart:convert';
 import 'dart:io';
-import 'package:flutter/material.dart';
+
 import 'package:camera/camera.dart';
-import 'package:gallery_saver/gallery_saver.dart';
+import 'package:flutter/material.dart';
+import 'package:path/path.dart' as path;
+import 'package:path_provider/path_provider.dart';
+import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
+
+Future<void> main() async {
+  await dotenv.load(fileName: ".env");
+
+  // Access the API key
+  final String apiKey = dotenv.env['API_KEY']!;
+  print("API key: $apiKey");
+}
 
 class CameraWidget extends StatefulWidget {
   final List<CameraDescription> cameras;
@@ -13,8 +26,8 @@ class CameraWidget extends StatefulWidget {
 }
 
 class _CameraWidgetState extends State<CameraWidget> {
-  late CameraController _controller;
-  bool _isCameraInitialized = false;
+  late CameraController controller;
+  bool isCameraInitialized = false;
 
   @override
   void initState() {
@@ -24,72 +37,91 @@ class _CameraWidgetState extends State<CameraWidget> {
 
   Future<void> _initializeCamera() async {
     if (widget.cameras.isNotEmpty) {
-      _controller = CameraController(
-        widget.cameras[0], // Get the first available camera
-        ResolutionPreset.high, // Use high resolution preset
-      );
-
-      _controller.initialize().then((_) {
-        if (!mounted) {
-          return;
-        }
-        setState(() {
-          _isCameraInitialized = true;
-        });
-      }).catchError((e) {
-        print(e); // Handle the error properly in a production app
-      });
+      controller = CameraController(widget.cameras[0], ResolutionPreset.high);
+      await controller.initialize();
+      if (!mounted) return;
+      setState(() => isCameraInitialized = true);
     } else {
       print('No camera is available');
     }
   }
 
   Future<void> _takePicture() async {
-    if (!_controller.value.isInitialized) {
-      print('Error: Camera not initialized.');
+    if (!controller.value.isInitialized) {
+      print('Error: select a camera first.');
       return;
     }
 
-    if (_controller.value.isTakingPicture) {
+    if (controller.value.isTakingPicture) {
       // A capture is already pending, do nothing.
       return;
     }
 
     try {
-      final XFile image = await _controller.takePicture();
-      _showImagePreview(image.path);
-      // Optionally, save the image to the gallery
-      GallerySaver.saveImage(image.path).then((bool? success) {
-        if (success == true) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Image saved to gallery")),
-          );
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Failed to save image")),
-          );
-        }
-      });
+      final XFile image = await controller.takePicture();
+      print("Picture saved to ${image.path}");
+
+      // Analyze the captured image for text
+      final detectedText = await recognizeText(image.path);
+      print("Detected text: $detectedText");
+
+      // Display the detected text or use it as needed
+
+      // Save image to the computer
+      await _saveImageToComputer(image.path);
     } catch (e) {
       print(e); // If an error occurs, log the error
     }
   }
 
-  void _showImagePreview(String imagePath) {
-    showDialog(
-      context: context,
-      builder: (context) => Dialog(
-        child: Container(
-          width: double.infinity,
-          child: Image.file(File(imagePath)),
-        ),
-      ),
+  Future<String> recognizeText(String imagePath) async {
+    // Replace `YOUR_API_KEY` with your actual Cloud Vision API key
+    final String apiKey = "YOUR_API_KEY";
+    final String url = "https://vision.googleapis.com/v1/images:annotate?key=$apiKey";
+
+    // Convert image to base64
+    final bytes = await File(imagePath).readAsBytes();
+    final base64Image = base64Encode(bytes);
+
+    // Construct the API request
+    final response = await http.post(
+      Uri.parse(url),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({
+        "requests": [
+          {
+            "image": {"content": base64Image},
+            "features": [{"type": "TEXT_DETECTION"}]
+          }
+        ]
+      }),
     );
+
+    if (response.statusCode == 200) {
+      final responseJson = json.decode(response.body);
+      // Extracting the detected text from the API response
+      final text = responseJson['responses'][0]['fullTextAnnotation']['text'];
+      return text;
+    } else {
+      throw Exception('Failed to recognize text.');
+    }
+  }
+
+  Future<void> _saveImageToComputer(String imagePath) async {
+    try {
+      final File originalImageFile = File(imagePath);
+      final String directoryPath = "/path/to/your/directory";
+      final String copyPath = path.join(directoryPath, path.basename(imagePath));
+      await originalImageFile.copy(copyPath);
+      print("Image saved to $copyPath");
+    } catch (e) {
+      print("Failed to save image: $e");
+    }
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    controller.dispose();
     super.dispose();
   }
 
@@ -97,21 +129,21 @@ class _CameraWidgetState extends State<CameraWidget> {
   Widget build(BuildContext context) {
     return Container(
       height: MediaQuery.of(context).size.height / 2,
-      child: _isCameraInitialized
+      child: isCameraInitialized
           ? Stack(
               children: [
-                CameraPreview(_controller), // Display the camera preview
+                CameraPreview(controller),
                 Positioned(
                   bottom: 20,
                   right: 20,
                   child: FloatingActionButton(
                     child: Icon(Icons.camera_alt),
-                    onPressed: _takePicture, // Capture the image when the button is pressed
+                    onPressed: _takePicture,
                   ),
                 ),
               ],
             )
-          : Center(child: CircularProgressIndicator()), // Show a loading indicator until the camera is initialized
+          : Center(child: CircularProgressIndicator()),
     );
   }
 }

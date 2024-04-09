@@ -30,8 +30,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  camera: ^0.9.4+5
-  gallery_saver: ^2.3.2
+ 
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -41,6 +40,16 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  camera: ^0.9.4+5
+  gallery_saver: ^2.3.2
+  path_provider: ^2.1.2
+  google_ml_vision: ^0.0.8
+  image_picker: ^1.0.7
+  http: ^0.13.3
+  dotenv: ^2.0.0
+  flutter_config: any
+  flutter_dotenv: ^5.0.3
+
   # The "flutter_lints" package below contains a set of recommended lints to
   # encourage good coding practices. The lint set provided by the package is
   # activated in the `analysis_options.yaml` file located at the root of your
