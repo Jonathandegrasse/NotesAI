@@ -1,5 +1,7 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
+import 'package:gallery_saver/gallery_saver.dart';
 
 class CameraWidget extends StatefulWidget {
   final List<CameraDescription> cameras;
@@ -22,7 +24,11 @@ class _CameraWidgetState extends State<CameraWidget> {
 
   Future<void> _initializeCamera() async {
     if (widget.cameras.isNotEmpty) {
-      _controller = CameraController(widget.cameras[0], ResolutionPreset.medium);
+      _controller = CameraController(
+        widget.cameras[0], // Get the first available camera
+        ResolutionPreset.high, // Use high resolution preset
+      );
+
       _controller.initialize().then((_) {
         if (!mounted) {
           return;
@@ -40,7 +46,7 @@ class _CameraWidgetState extends State<CameraWidget> {
 
   Future<void> _takePicture() async {
     if (!_controller.value.isInitialized) {
-      print('Error: select a camera first.');
+      print('Error: Camera not initialized.');
       return;
     }
 
@@ -51,11 +57,34 @@ class _CameraWidgetState extends State<CameraWidget> {
 
     try {
       final XFile image = await _controller.takePicture();
-      print("Picture saved to ${image.path}");
-      // Here, you can add code to display the image or save it to the gallery
+      _showImagePreview(image.path);
+      // Optionally, save the image to the gallery
+      GallerySaver.saveImage(image.path).then((bool? success) {
+        if (success == true) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Image saved to gallery")),
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text("Failed to save image")),
+          );
+        }
+      });
     } catch (e) {
       print(e); // If an error occurs, log the error
     }
+  }
+
+  void _showImagePreview(String imagePath) {
+    showDialog(
+      context: context,
+      builder: (context) => Dialog(
+        child: Container(
+          width: double.infinity,
+          child: Image.file(File(imagePath)),
+        ),
+      ),
+    );
   }
 
   @override
@@ -76,7 +105,7 @@ class _CameraWidgetState extends State<CameraWidget> {
                   bottom: 20,
                   right: 20,
                   child: FloatingActionButton(
-                    child: Icon(Icons.camera),
+                    child: Icon(Icons.camera_alt),
                     onPressed: _takePicture, // Capture the image when the button is pressed
                   ),
                 ),

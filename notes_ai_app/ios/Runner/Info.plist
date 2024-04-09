@@ -2,12 +2,19 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+
 	<key>NSCameraUsageDescription</key>
-	<string>We need camera access to take pictures</string>
+	<string>Your explanation for needing camera access goes here.</string>
+
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Your explanation for needing access to the photo library goes here.</string>
+	
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	
 	<key>CFBundleDisplayName</key>
 	<string>Notes Ai App</string>
+	
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
