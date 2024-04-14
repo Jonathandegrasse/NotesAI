@@ -1,6 +1,6 @@
 {
-    "name": "notes_ai_app",
-    "short_name": "notes_ai_app",
+    "name": "text_recognition_app",
+    "short_name": "text_recognition_app",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",

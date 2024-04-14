@@ -1,4 +1,4 @@
-# notes_ai_app
+# text_recognition_app
 
 A new Flutter project.
 
