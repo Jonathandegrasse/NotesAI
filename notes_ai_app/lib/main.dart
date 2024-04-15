@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
-
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:text_recognition_app/pages/home_page.dart';
 
-void main() {
-  runApp(const MyApp());
+Future main() async {
+  WidgetsFlutterBinding.ensureInitialized(); // Ensure initialization
+  await dotenv.load(fileName: ".env");
+  runApp(const MyApp()); // Run the app
 }
 
 class MyApp extends StatelessWidget {

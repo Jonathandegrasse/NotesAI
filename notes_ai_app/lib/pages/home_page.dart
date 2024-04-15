@@ -1,13 +1,14 @@
 import 'dart:convert';
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:gallery_picker/gallery_picker.dart';
 import 'package:gallery_picker/models/media_file.dart';
 import 'package:google_mlkit_text_recognition/google_mlkit_text_recognition.dart';
 
-void main() {
+Future<void> main() async {
+  await dotenv.load();
   runApp(MaterialApp(
     home: HomePage(),
   ));
@@ -23,6 +24,44 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   File? selectedMedia;
   String recognizedText = '';
+  String imageSummary = '';
+
+  Future<String> summarizeImage(File imageFile) async {
+    final uri = Uri.parse('https://api.openai.com/v1/chat/completions');
+    final headers = {
+      'Authorization': 'Bearer ${dotenv.env['OPEN_AI_KEY']}',
+      'Content-Type': 'application/json'
+    };
+
+    // Convert image to base64
+    final bytes = await imageFile.readAsBytes();
+    final base64Image = base64Encode(bytes);
+
+    final payload = jsonEncode({
+      "model": "gpt-4-turbo",
+      "messages": [
+        {
+          "role": "user",
+          "content": [
+            {"type": "text", "text": "What’s in this image?"},
+            {"type": "image_url", "image_url": {"url": "data:image/jpeg;base64,$base64Image"}}
+          ]
+        }
+      ],
+      "max_tokens": 300
+    });
+
+
+
+    final response = await http.post(uri, headers: headers, body: payload);
+
+    if (response.statusCode == 200) {
+      final responseData = json.decode(response.body);
+      return responseData['choices'][0]['message']['content'];
+    } else {
+      throw Exception('Failed to summarize the image: ${response.statusCode} - ${response.body}');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -43,11 +82,19 @@ class _HomePageState extends State<HomePage> {
             setState(() {
               selectedMedia = data;
             });
+            try {
+              final summary = await summarizeImage(data);
+              setState(() {
+                imageSummary = summary;
+              });
+            } catch (error) {
+              setState(() {
+                imageSummary = 'Error summarizing image: $error';
+              });
+            }
           }
         },
-        child: const Icon(
-          Icons.add,
-        ),
+        child: const Icon(Icons.add),
       ),
     );
   }
@@ -58,6 +105,9 @@ class _HomePageState extends State<HomePage> {
       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
+        if (selectedMedia != null) Image.file(selectedMedia!),
+        Text(recognizedText),
+        Text(imageSummary),
         _imageView(),
         _extractTextView(),
       ],
@@ -182,10 +232,8 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
 }
 
 Future<String?> _getDefinition(String word) async {
-  final apiKey =
-      '66df304a-8f7e-4604-ac7d-b54a27424ff1'; // Replace with your Merriam-Webster API key
   final url = Uri.parse(
-      'https://www.dictionaryapi.com/api/v3/references/collegiate/json/$word?key=$apiKey');
+      'https://www.dictionaryapi.com/api/v3/references/collegiate/json/$word?key=${dotenv.env['DICTIONARY_API_KEY']}');
 
   try {
     final response = await http.get(url);
