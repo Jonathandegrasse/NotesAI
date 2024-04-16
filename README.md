@@ -46,6 +46,10 @@ Ensure you have Flutter installed on your system. If not, refer to the [Flutter 
     ```makefile
     API_KEY="your_api_key_here"
 
+## Additional Requirements
+
+- **Android Emulator**: To fully test and run the Flutter application, an Android emulator is required. Ensure you have an emulator set up and running before executing the `flutter run` command. You can set up an emulator using Android Studio's AVD Manager or by using other tools like Genymotion.
+
 ## Running the Project
 
 Execute the following command to run the project:
