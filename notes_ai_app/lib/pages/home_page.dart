@@ -28,6 +28,7 @@ class _HomePageState extends State<HomePage> {
   String imageSummary = '';
   Color backgroundColor = Colors.lightBlue[100]!;
 
+  // GPT Functionality
   Future<String> summarizeImage(File imageFile) async {
     final uri = Uri.parse('https://api.openai.com/v1/chat/completions');
     final headers = {
@@ -67,6 +68,7 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  // Builds UI Screen
   Widget _buildUI() {
     return SingleChildScrollView(
       child: Column(
@@ -97,6 +99,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  // Pulls from ExtractText for viewing and interacting w/ words
   Widget _extractTextView() {
     if (selectedMedia == null) {
       return const Center(
@@ -149,6 +152,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  //Extracts Words for use
   Future<String?> _extractText(File file) async {
     final textRecognizer = TextRecognizer(
       script: TextRecognitionScript.latin,
@@ -161,6 +165,7 @@ class _HomePageState extends State<HomePage> {
     return text;
   }
 
+  //Code for button and page switching
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -231,6 +236,7 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
+//Flashcard page
 class FlashcardScreen extends StatefulWidget {
   final String word;
   final String definition;
@@ -257,6 +263,7 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
     });
   }
 
+  //Back Button
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -285,6 +292,7 @@ class _FlashcardScreenState extends State<FlashcardScreen> {
   }
 }
 
+//Code for word defining
 Future<String?> _getDefinition(String word) async {
   final url = Uri.parse(
       'https://www.dictionaryapi.com/api/v3/references/collegiate/json/$word?key=${dotenv.env['DICTIONARY_API_KEY']}');
@@ -310,6 +318,7 @@ Future<String?> _getDefinition(String word) async {
   return null;
 }
 
+//Settings screen for color changing
 class SettingsScreen extends StatelessWidget {
   final Color backgroundColor;
   final ValueChanged<Color> onColorSelected;
