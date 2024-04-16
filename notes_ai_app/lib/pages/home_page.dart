@@ -75,7 +75,6 @@ class _HomePageState extends State<HomePage> {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           if (selectedMedia != null) Image.file(selectedMedia!),
-          Text(recognizedText),
           Text(imageSummary),
           _imageView(),
           _extractTextView(),
@@ -101,7 +100,7 @@ class _HomePageState extends State<HomePage> {
   Widget _extractTextView() {
     if (selectedMedia == null) {
       return const Center(
-        child: Text("No result."),
+        child: Text("Press + Button to start!"),
       );
     }
     return FutureBuilder(
@@ -114,12 +113,14 @@ class _HomePageState extends State<HomePage> {
         } else if (snapshot.hasData) {
           recognizedText = snapshot.data ?? "";
           List<String> words = recognizedText.split(RegExp(r'\b'));
+          Set<String> seenWords = Set();
           return Wrap(
             spacing: 8.0,
             runSpacing: 4.0,
             children: words
                 .where((word) => word.trim().length > 1)
                 .where((word) => !RegExp(r'[0-9,\.]').hasMatch(word))
+                .where((word) => seenWords.add(word))
                 .map((word) => GestureDetector(
                       onTap: () {
                         Navigator.push(
